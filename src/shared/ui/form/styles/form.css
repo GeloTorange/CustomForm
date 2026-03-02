@@ -1,0 +1,61 @@
+.form {
+  width: 100%;
+}
+
+.form--vertical {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-item {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-item__label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #203447;
+}
+
+.form-item__required {
+  margin-left: 0.25rem;
+  color: #c0332f;
+}
+
+.form-item__control {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-item__control > input,
+.form-item__control > textarea,
+.form-item__control > select {
+  width: 100%;
+  border: 1px solid #ccd6e0;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font: inherit;
+  background: #fff;
+  color: #1d2a39;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-item__control > input:focus,
+.form-item__control > textarea:focus,
+.form-item__control > select:focus {
+  outline: none;
+  border-color: #2a7de1;
+  box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.2);
+}
+
+.form-item__help {
+  color: #bf2f2a;
+  font-size: 0.82rem;
+}
+
+.form-item--invalid .form-item__control > input,
+.form-item--invalid .form-item__control > textarea,
+.form-item--invalid .form-item__control > select {
+  border-color: #da4f4a;
+}
