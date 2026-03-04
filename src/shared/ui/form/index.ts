@@ -10,7 +10,15 @@ type FormComponent = typeof FormRoot & {
   useWatchField: typeof useWatchField
 }
 
-// Публичный API формы в стиле Antd: Form + Form.Item + хуки.
+/**
+ * Публичный API формы в стиле Antd.
+ *
+ * Содержит:
+ * - `Form` (корневой компонент),
+ * - `Form.Item` (элемент поля/контейнер),
+ * - `Form.useFormInstance` (доступ к form instance),
+ * - `Form.useWatchField` (подписка на значение поля).
+ */
 export const Form = Object.assign(FormRoot, {
   Item: FormItem,
   useFormInstance,

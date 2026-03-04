@@ -1,6 +1,11 @@
 import type { FormValues, ValidationRule } from '@/shared/lib/form/types'
 
-// Определяет "пустое" значение для required-валидации.
+/**
+ * Определяет, считать ли значение пустым для required-валидации.
+ *
+ * @param value Проверяемое значение.
+ * @returns `true`, если значение трактуется как пустое.
+ */
 const isValueEmpty = (value: unknown): boolean => {
   if (value === undefined || value === null) {
     return true
@@ -21,7 +26,12 @@ const isValueEmpty = (value: unknown): boolean => {
   return false
 }
 
-// Возвращает длину строки/массива, если это применимо к значению.
+/**
+ * Возвращает длину строки или массива, если это применимо к значению.
+ *
+ * @param value Проверяемое значение.
+ * @returns Число символов/элементов или `undefined`.
+ */
 const resolveLength = (value: unknown): number | undefined => {
   if (typeof value === 'string' || Array.isArray(value)) {
     return value.length
@@ -30,11 +40,25 @@ const resolveLength = (value: unknown): number | undefined => {
   return undefined
 }
 
-// Выбирает кастомный текст ошибки, либо fallback-сообщение.
+/**
+ * Возвращает сообщение ошибки: пользовательское или fallback.
+ *
+ * @param fallback Текст ошибки по умолчанию.
+ * @param message Пользовательский текст ошибки из правила.
+ * @returns Итоговый текст ошибки.
+ */
 const resolveErrorMessage = (fallback: string, message?: string): string =>
   message?.trim() ? message : fallback
 
-// Прогоняет значение через набор правил и возвращает первую ошибку.
+/**
+ * Валидирует значение по набору правил и возвращает первую найденную ошибку.
+ *
+ * @template TValues Тип объекта всех значений формы.
+ * @param value Текущее значение поля.
+ * @param values Все значения формы.
+ * @param rules Набор правил валидации.
+ * @returns Текст ошибки или `undefined`, если ошибок нет.
+ */
 export const validateValue = async <TValues extends FormValues>(
   value: unknown,
   values: TValues,

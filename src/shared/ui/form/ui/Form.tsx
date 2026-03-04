@@ -30,7 +30,12 @@ import '@/shared/ui/form/styles/form.css'
 
 type RHFFormValues<TValues extends FormValues> = TValues & Record<string, unknown>
 
-// Нормализует validateTrigger в массив событий для единой проверки.
+/**
+ * Нормализует `validateTrigger` в массив событий для единой проверки.
+ *
+ * @param validateTrigger Событие валидации в строке или массиве.
+ * @returns Массив событий валидации.
+ */
 const normalizeValidateTrigger = (
   validateTrigger?: FormValidateTrigger | FormValidateTrigger[],
 ): FormValidateTrigger[] => {
@@ -41,7 +46,14 @@ const normalizeValidateTrigger = (
   return Array.isArray(validateTrigger) ? validateTrigger : [validateTrigger]
 }
 
-// Корневой компонент формы: связывает внешний API Antd-подобной формы с react-hook-form.
+/**
+ * Корневой компонент формы.
+ * Связывает внешний Antd-подобный API (`FormInstance`) с `react-hook-form`.
+ *
+ * @template TValues Тип значений формы.
+ * @param props Свойства формы.
+ * @returns JSX-элемент формы с контекстом RHF и контекстом FormInstance.
+ */
 export const FormRoot = <TValues extends FormValues = FormValues>({
   children,
   className,
@@ -87,7 +99,13 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     onFieldsChangeRef.current = onFieldsChange
   }, [onFieldsChange])
 
-  // Проверяет, нужно ли валидировать поле на конкретном событии (change/blur/submit).
+  /**
+   * Проверяет, нужно ли валидировать поле на конкретном событии.
+   *
+   * @param name Имя поля.
+   * @param trigger Триггер валидации (`onChange`, `onBlur`, `onSubmit`).
+   * @returns `true`, если для поля включён указанный триггер.
+   */
   const shouldValidateField = useCallback(
     (name: string, trigger: FormValidateTrigger): boolean => {
       const fieldConfig = fieldRegistryRef.current[name]
@@ -97,7 +115,12 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [],
   )
 
-  // Возвращает список известных полей: зарегистрированные + поля из текущих values.
+  /**
+   * Возвращает список известных полей:
+   * зарегистрированные поля + поля, найденные в текущих values.
+   *
+   * @returns Уникальный список имён полей.
+   */
   const getKnownFieldNames = useCallback((): string[] => {
     const knownNames = new Set<string>([
       ...Object.keys(fieldRegistryRef.current),
@@ -107,7 +130,13 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     return Array.from(knownNames)
   }, [methods])
 
-  // Формирует объект FormFieldData в формате onFieldsChange/getFieldsError.
+  /**
+   * Формирует `FormFieldData` для конкретного поля.
+   *
+   * @param name Имя поля.
+   * @param values Текущие значения формы.
+   * @returns Объект состояния поля для API `onFieldsChange/getFieldsError`.
+   */
   const buildFieldData = useCallback(
     (name: string, values: TValues): FormFieldData<TValues> => {
       const fieldState = methods.getFieldState(name as Path<RHFFormValues<TValues>>)
@@ -124,7 +153,13 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [methods],
   )
 
-  // Эмитит onFieldsChange: отдельно changedFields и полный allFields.
+  /**
+   * Эмитит `onFieldsChange` с двумя наборами:
+   * изменённые поля и полный срез всех полей.
+   *
+   * @param changedNames Список изменённых имён полей.
+   * @param valuesArg Опциональный срез значений, если уже вычислен снаружи.
+   */
   const emitFieldsChange = useCallback(
     (changedNames: string[], valuesArg?: TValues): void => {
       const uniqueChangedNames = Array.from(new Set(changedNames.filter(Boolean)))
@@ -143,7 +178,13 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [buildFieldData, getKnownFieldNames, methods],
   )
 
-  // Устанавливает значение одного поля и синхронно эмитит нужные события формы.
+  /**
+   * Устанавливает значение одного поля и синхронизирует события формы.
+   *
+   * @param name Имя поля.
+   * @param value Новое значение.
+   * @param options Опции установки (`touch`, `validate`, `trigger`).
+   */
   const setFieldValue = useCallback(
     async (
       name: string,
@@ -185,7 +226,11 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [emitFieldsChange, methods, shouldValidateField],
   )
 
-  // Патчит сразу несколько полей из partial-объекта (аналог setFieldsValue).
+  /**
+   * Патчит сразу несколько полей из partial-объекта (аналог `setFieldsValue`).
+   *
+   * @param patch Частичный объект новых значений.
+   */
   const setFieldsValue = useCallback(
     async (patch: Partial<TValues>): Promise<void> => {
       const beforeValues = methods.getValues() as TValues
@@ -218,7 +263,12 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [emitFieldsChange, methods],
   )
 
-  // Отмечает поле как touched и при необходимости запускает валидацию.
+  /**
+   * Отмечает поле как touched и при необходимости запускает валидацию.
+   *
+   * @param name Имя поля.
+   * @param trigger Триггер события, с которым связывается валидация.
+   */
   const markFieldTouched = useCallback(
     async (name: string, trigger: FormValidateTrigger = 'onBlur'): Promise<void> => {
       const currentValue = getValueByPath(methods.getValues(), name)
@@ -240,7 +290,13 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [emitFieldsChange, methods, shouldValidateField],
   )
 
-  // Валидирует выбранные поля (или все зарегистрированные) и возвращает значения формы.
+  /**
+   * Валидирует выбранные поля (или все зарегистрированные) и возвращает values.
+   *
+   * @param names Опциональный список имён полей для валидации.
+   * @returns Текущие значения формы при успешной валидации.
+   * @throws {FormFinishFailed<TValues>} При ошибках валидации.
+   */
   const validateFields = useCallback(
     async (names?: string[]): Promise<TValues> => {
       const targetNames =
@@ -276,7 +332,11 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [buildFieldData, emitFieldsChange, getKnownFieldNames, methods],
   )
 
-  // Сбрасывает форму целиком или только указанные поля к initialValues.
+  /**
+   * Сбрасывает форму целиком или только указанные поля к initialValues.
+   *
+   * @param names Опциональный список полей для сброса.
+   */
   const resetFields = useCallback(
     (names?: string[]): void => {
       const targetNames =
@@ -301,16 +361,30 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [emitFieldsChange, getKnownFieldNames, methods],
   )
 
-  // Возвращает текущее значение одного поля по пути.
+  /**
+   * Возвращает текущее значение одного поля по пути.
+   *
+   * @param name Имя поля в dot-notation.
+   * @returns Значение поля.
+   */
   const getFieldValue = useCallback(
     (name: string): unknown => getValueByPath(methods.getValues(), name),
     [methods],
   )
 
-  // Возвращает полный снимок текущих значений формы.
+  /**
+   * Возвращает полный снимок текущих значений формы.
+   *
+   * @returns Текущие values формы.
+   */
   const getFieldsValue = useCallback((): TValues => methods.getValues() as TValues, [methods])
 
-  // Возвращает массив ошибок одного поля.
+  /**
+   * Возвращает массив ошибок одного поля.
+   *
+   * @param name Имя поля.
+   * @returns Массив сообщений об ошибках (обычно 0..1).
+   */
   const getFieldError = useCallback(
     (name: string): string[] => {
       const message = methods.getFieldState(name as Path<RHFFormValues<TValues>>).error?.message
@@ -319,7 +393,12 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [methods],
   )
 
-  // Возвращает структуру ошибок/состояния для выбранных полей или для всех.
+  /**
+   * Возвращает структуру ошибок/состояния для выбранных полей или для всех.
+   *
+   * @param names Опциональный список имён полей.
+   * @returns Массив структур `FormFieldData`.
+   */
   const getFieldsError = useCallback(
     (names?: string[]): FormFieldData<TValues>[] => {
       const values = methods.getValues() as TValues
@@ -329,14 +408,24 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [buildFieldData, getKnownFieldNames, methods],
   )
 
-  // Проверяет, было ли поле затронуто пользователем.
+  /**
+   * Проверяет, было ли поле затронуто пользователем.
+   *
+   * @param name Имя поля.
+   * @returns `true`, если поле touched.
+   */
   const isFieldTouched = useCallback(
     (name: string): boolean =>
       methods.getFieldState(name as Path<RHFFormValues<TValues>>).isTouched,
     [methods],
   )
 
-  // Проверяет, были ли затронуты указанные поля (или любые известные поля).
+  /**
+   * Проверяет, были ли затронуты указанные поля (или любые известные поля).
+   *
+   * @param names Опциональный список имён полей.
+   * @returns `true`, если найдено хотя бы одно touched-поле.
+   */
   const isFieldsTouched = useCallback(
     (names?: string[]): boolean => {
       const targetNames = names && names.length > 0 ? names : getKnownFieldNames()
@@ -347,7 +436,12 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [getKnownFieldNames, methods],
   )
 
-  // Регистрирует мета-данные поля (rules/validateTrigger) для Antd-подобного API.
+  /**
+   * Регистрирует мета-данные поля для Antd-подобного API.
+   *
+   * @param name Имя поля.
+   * @param options Опции регистрации (правила и триггеры валидации).
+   */
   const registerField = useCallback(
     (name: string, options: RegisterFieldOptions<TValues> = {}): void => {
       fieldRegistryRef.current[name] = options
@@ -355,12 +449,21 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     [],
   )
 
-  // Удаляет поле из реестра при размонтировании Form.Item.
+  /**
+   * Удаляет поле из реестра при размонтировании `Form.Item`.
+   *
+   * @param name Имя поля.
+   */
   const unregisterField = useCallback((name: string): void => {
     delete fieldRegistryRef.current[name]
   }, [])
 
-  // Выполняет submit-цикл: success -> onFinish, error -> onFinishFailed.
+  /**
+   * Выполняет submit-цикл формы:
+   * success -> `onFinish`, error -> `onFinishFailed`.
+   *
+   * @returns Promise завершения submit-цикла.
+   */
   const submit = useCallback(async (): Promise<void> => {
     await methods.handleSubmit(
       // Ветка успешной валидации формы.
@@ -382,7 +485,9 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     )()
   }, [buildFieldData, getKnownFieldNames, methods])
 
-  // Собирает стабильный form instance, который отдаётся через FormContext.
+  /**
+   * Собирает стабильный `FormInstance`, который отдаётся через `FormContext`.
+   */
   const form = useMemo<FormInstance<TValues>>(
     () => ({
       getFieldValue,
@@ -418,7 +523,11 @@ export const FormRoot = <TValues extends FormValues = FormValues>({
     ],
   )
 
-  // Перехватывает submit браузера и перенаправляет в form.submit().
+  /**
+   * Перехватывает submit браузера и перенаправляет в `form.submit()`.
+   *
+   * @param event Нативное событие отправки формы.
+   */
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault()

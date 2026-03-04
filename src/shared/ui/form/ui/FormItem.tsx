@@ -14,7 +14,13 @@ import { useFormInstance } from '@/shared/ui/form/hooks/useFormInstance'
 
 type RHFFormValues<TValues extends FormValues> = TValues & Record<string, unknown>
 
-// Универсально извлекает значение из событий разных UI-компонентов.
+/**
+ * Универсально извлекает значение из аргументов событий разных UI-компонентов.
+ *
+ * @param valuePropName Имя пропа, который хранит значение (`value`, `checked`, `modelValue` и т.д.).
+ * @param args Аргументы, пришедшие в обработчик события.
+ * @returns Нормализованное значение поля.
+ */
 const resolveValueFromEvent = (valuePropName: string, args: unknown[]): unknown => {
   if (args.length === 0) {
     return undefined
@@ -45,7 +51,14 @@ const resolveValueFromEvent = (valuePropName: string, args: unknown[]): unknown 
   return args.length === 1 ? args[0] : args
 }
 
-// Преобразует набор наших rules в validate-функцию для react-hook-form.
+/**
+ * Преобразует набор внутренних `rules` в validate-функцию для `react-hook-form`.
+ *
+ * @template TValues Тип полного объекта значений формы.
+ * @param rules Набор правил поля.
+ * @param getValues Функция получения текущего среза values формы.
+ * @returns Функция валидации RHF или `undefined`, если правил нет.
+ */
 const buildValidate = <TValues extends FormValues>(
   rules?: ValidationRule<TValues>[],
   getValues?: () => TValues,
@@ -60,7 +73,14 @@ const buildValidate = <TValues extends FormValues>(
   }
 }
 
-// Form.Item с именованным полем: связь с RHF + валидация + адаптация сторонних контролов.
+/**
+ * Реализация `Form.Item` для именованного поля.
+ * Отвечает за связь с RHF-контроллером, валидацию и адаптацию сторонних UI-компонентов.
+ *
+ * @template TValues Тип объекта значений формы.
+ * @param props Свойства `Form.Item` с обязательным `name`.
+ * @returns JSX-элемент поля формы.
+ */
 const FormItemField = <TValues extends FormValues = FormValues>({
   name,
   label,
@@ -108,6 +128,12 @@ const FormItemField = <TValues extends FormValues = FormValues>({
     errors,
     touched,
     form,
+    /**
+     * Обработчик изменения значения поля.
+     * Извлекает значение из события, применяет normalize и обновляет form instance.
+     *
+     * @param args Аргументы события от контрола.
+     */
     onChange: (...args: unknown[]): void => {
       const resolvedValue = getValueFromEvent
         ? getValueFromEvent(...args)
@@ -124,6 +150,10 @@ const FormItemField = <TValues extends FormValues = FormValues>({
         trigger: resolvedTrigger,
       })
     },
+    /**
+     * Обработчик blur поля.
+     * Синхронизирует touched-состояние и возможную валидацию.
+     */
     onBlur: (): void => {
       // Сообщаем RHF о blur и синхронизируем touched/валидацию в нашем API.
       field.onBlur()
@@ -183,7 +213,14 @@ const FormItemField = <TValues extends FormValues = FormValues>({
   )
 }
 
-// Form.Item без name: используется как контейнер для layout/кнопок/статичного контента.
+/**
+ * Реализация `Form.Item` без `name`.
+ * Используется как контейнер layout/кнопок/статичного контента.
+ *
+ * @template TValues Тип объекта значений формы.
+ * @param props Свойства `Form.Item` без привязки к конкретному полю.
+ * @returns JSX-элемент контейнера.
+ */
 const FormItemStatic = <TValues extends FormValues = FormValues>({
   label,
   className,
@@ -218,7 +255,14 @@ const FormItemStatic = <TValues extends FormValues = FormValues>({
   )
 }
 
-// Публичный компонент Form.Item: выбирает режим named/static по наличию name.
+/**
+ * Публичный компонент `Form.Item`.
+ * Выбирает режим `named/static` в зависимости от наличия `name`.
+ *
+ * @template TValues Тип объекта значений формы.
+ * @param props Свойства Form.Item.
+ * @returns JSX-элемент `FormItemField` или `FormItemStatic`.
+ */
 export const FormItem = <TValues extends FormValues = FormValues>(
   props: FormItemProps<TValues>,
 ) => {
