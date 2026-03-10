@@ -4,10 +4,7 @@ import { type ReactNode, useEffect } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Form, type FormInstance } from '@/shared/ui/form'
-import {
-  ThirdPartyTextField,
-  ThirdPartyToggle,
-} from '@/shared/ui/third-party-kit'
+import { ThirdPartyTextField, ThirdPartyToggle } from '@/shared/ui/third-party-kit'
 
 interface DemoValues {
   profile: {
@@ -96,9 +93,6 @@ const BaseForm = ({
     <Form.Item
       name="profile.city"
       label="Город"
-      valuePropName="modelValue"
-      trigger="onValueChange"
-      getValueFromEvent={(value) => value}
       rules={[{ required: true, message: 'Укажите город' }]}
     >
       <ThirdPartyTextField aria-label="city" />
@@ -366,16 +360,25 @@ describe('Form', () => {
 describe('Form.Item', () => {
   it('работает с обычным input по умолчанию (value/onChange)', async () => {
     const user = userEvent.setup()
-    render(<BaseForm />)
+    render(
+      <Form<{ profile: { firstName: string } }>
+        initialValues={{ profile: { firstName: 'Oleg' } }}
+      >
+        <Form.Item name="profile.firstName">
+          <input aria-label="plain-input" />
+        </Form.Item>
+      </Form>,
+    )
 
-    const input = screen.getByLabelText('first-name')
+    const input = screen.getByLabelText('plain-input')
+    expect(input).toHaveValue('Oleg')
     await user.clear(input)
     await user.type(input, 'Anton')
 
     expect(input).toHaveValue('Anton')
   })
 
-  it('поддерживает valuePropName + trigger для ThirdPartyTextField', async () => {
+  it('работает с ThirdPartyTextField через стандартный value/onChange', async () => {
     const user = userEvent.setup()
     render(<BaseForm />)
 

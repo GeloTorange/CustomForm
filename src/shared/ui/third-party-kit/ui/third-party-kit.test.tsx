@@ -53,6 +53,31 @@ describe('ThirdPartyTextField', () => {
     await user.type(input, 'abc')
     expect(onValueChange).toHaveBeenLastCalledWith('abc')
   })
+
+  it('поддерживает стандартный value/onChange контракт', async () => {
+    const onChange = vi.fn()
+    const user = userEvent.setup()
+
+    const ControlledField = () => {
+      const [value, setValue] = useState('')
+
+      return (
+        <ThirdPartyTextField
+          value={value}
+          onChange={(event) => {
+            onChange(event.target.value)
+            setValue(event.target.value)
+          }}
+        />
+      )
+    }
+
+    render(<ControlledField />)
+    const input = screen.getByRole('textbox')
+
+    await user.type(input, 'xyz')
+    expect(onChange).toHaveBeenLastCalledWith('xyz')
+  })
 })
 
 describe('ThirdPartyToggle', () => {

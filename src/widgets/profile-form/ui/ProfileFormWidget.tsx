@@ -5,9 +5,8 @@ import {
   type FormFieldData,
   type FormFinishFailed,
 } from '@/shared/ui/form'
+import { FormButtonItem, FormInputItem } from '@/shared/ui/form-items'
 import {
-  ThirdPartyButton,
-  ThirdPartyTextField,
   ThirdPartyToggle,
 } from '@/shared/ui/third-party-kit'
 import {
@@ -24,9 +23,16 @@ const ResetButton = () => {
   const form = Form.useFormInstance<ProfileFormValues>()
 
   return (
-    <ThirdPartyButton type="button" variant="secondary" onClick={() => form.resetFields()}>
+    <FormButtonItem
+      noStyle
+      buttonProps={{
+        type: 'button',
+        variant: 'secondary',
+        onClick: () => form.resetFields(),
+      }}
+    >
       Сбросить
-    </ThirdPartyButton>
+    </FormButtonItem>
   )
 }
 
@@ -110,8 +116,9 @@ export const ProfileFormWidget = () => {
     <section className="profile-form-widget">
       <h2 className="profile-form-widget__title">Антд-подобная форма на react-hook-form</h2>
       <p className="profile-form-widget__description">
-        `Form.Item` поддерживает нативные поля и сторонние компоненты с нестандартными API
-        через `valuePropName`, `trigger`, `getValueFromEvent`.
+        Для компонентов со стандартным API `value/onChange` достаточно обычного `Form.Item`.
+        Для нестандартных контролов доступны адаптеры через `valuePropName`, `trigger`,
+        `getValueFromEvent`.
       </p>
 
       <Form<ProfileFormValues>
@@ -121,39 +128,42 @@ export const ProfileFormWidget = () => {
         onFinish={handleFinish}
         onFinishFailed={handleFinishFailed}
       >
-        <Form.Item
+        <FormInputItem<ProfileFormValues>
           name="profile.firstName"
           label="Имя"
           rules={[
             { required: true, message: 'Введите имя' },
             { min: 2, message: 'Минимум 2 символа' },
           ]}
-        >
-          <input placeholder="Олег" />
-        </Form.Item>
+          inputProps={{
+            placeholder: 'Олег',
+            'aria-label': 'first-name',
+          }}
+        />
 
-        <Form.Item
+        <FormInputItem<ProfileFormValues>
           name="profile.email"
           label="Email"
           rules={[
             { required: true, message: 'Введите email' },
             { pattern: emailPattern, message: 'Некорректный email' },
           ]}
-        >
-          <input type="email" placeholder="name@company.com" />
-        </Form.Item>
+          inputProps={{
+            type: 'email',
+            placeholder: 'name@company.com',
+            'aria-label': 'email',
+          }}
+        />
 
-        <Form.Item
+        <FormInputItem<ProfileFormValues>
           name="profile.city"
           label="Город (компонент стороннего UI kit)"
-          // Настройка адаптера для компонента с modelValue/onValueChange.
-          valuePropName="modelValue"
-          trigger="onValueChange"
-          getValueFromEvent={(value) => value}
           rules={[{ required: true, message: 'Укажите город' }]}
-        >
-          <ThirdPartyTextField placeholder="Москва" />
-        </Form.Item>
+          inputProps={{
+            placeholder: 'Москва',
+            'aria-label': 'city',
+          }}
+        />
 
         <Form.Item
           name="settings.isDeveloper"
@@ -182,7 +192,12 @@ export const ProfileFormWidget = () => {
 
         <Form.Item noStyle>
           <div className="profile-form-widget__actions">
-            <ThirdPartyButton type="submit">Отправить</ThirdPartyButton>
+            <FormButtonItem<ProfileFormValues>
+              noStyle
+              buttonProps={{ type: 'submit' }}
+            >
+              Отправить
+            </FormButtonItem>
             <ResetButton />
           </div>
         </Form.Item>
